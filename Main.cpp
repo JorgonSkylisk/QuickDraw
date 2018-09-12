@@ -2,7 +2,8 @@
 // Library needed for playing music and sound effects
 #include <SFML/Audio.hpp>
 #include <string>
-
+#include <cstdlib>
+#include <ctime>
 
 
 int main()
@@ -16,14 +17,17 @@ int main()
 	gamewindow.create(sf::VideoMode::getDesktopMode(), "Quick Draw",
 		sf::Style::Titlebar | sf::Style::Close);
 
-	//create button sprite
+	// seed RNG
+	srand(time(NULL));
+
+	// create button sprite
 	sf::Texture buttonTexture;
 	buttonTexture.loadFromFile("graphics/button.png");
 
 	sf::Sprite buttonSprite;
 	buttonSprite.setTexture(buttonTexture);
 
-	//set sprite coords
+	// set sprite coords
 	buttonSprite.setPosition(
 		gamewindow.getSize().x / 2 - buttonTexture.getSize().x / 2,
 		gamewindow.getSize().y / 2 - buttonTexture.getSize().y / 2
@@ -33,7 +37,7 @@ int main()
 	sf::Font gameFont;
 	gameFont.loadFromFile("fonts/mainFont.ttf");
 
-	//create title
+	// create title
 	sf::Text titleText;
 	titleText.setFont(gameFont);
 	titleText.setString("Button Masher!");
@@ -50,7 +54,7 @@ int main()
 	float signalTimeLowerLimit = 5.0f;
 	float signalTimeUpperLimit = 10.0f;
 
-	sf::Time timetilSignal = sf::seconds(0.0f);
+	sf::Time timetilSignal = sf::seconds(signalTimeLowerLimit);
 	sf::Time timeSinceSignal= sf::seconds(0.0f);
 	sf::Clock gameClock;
 
@@ -70,7 +74,12 @@ int main()
 
 			if (gameEvent.type == sf::Event::MouseButtonPressed)
 			{
-			
+				if (buttonSprite.getGlobalBounds().contains(gameEvent.mouseButton.x, gameEvent.mouseButton.y))
+				{
+					int range = (int)(signalTimeUpperLimit - signalTimeLowerLimit);
+					float signalSeconds = rand() % range + signalTimeLowerLimit;
+					timetilSignal = sf::seconds(signalSeconds);
+				}
 			}
 
 
@@ -86,6 +95,12 @@ int main()
 		//setup timer
 		sf::Time frameTime = gameClock.restart();
 
+		timetilSignal = timetilSignal - frameTime;
+
+		if (timetilSignal.asSeconds() <= 0.0f)
+		{
+			buttonSprite.setColor(sf::Color::Green);
+		}
 
 		// *** Draw Graphics ***
 		gamewindow.clear(sf::Color::Transparent);
